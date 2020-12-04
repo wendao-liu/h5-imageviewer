@@ -9,33 +9,40 @@ import img_uof from '../assets/uof.jpg'
 import errorPlh from '../assets/img_loading_error.png'
 
 export default class ExampleNode extends React.Component {
-  onShowImgsClick () {
-    const imgs = [img_uof, img_cover, 9, img_uof, img_cover, img_timg, img_uof].map((url, index) => {
-      return { src: url, alt: index }
-    })
-    viewer.showImgListViewer(imgs, {
-      onPageChanged: pageIndex => {
-        console.log('onPageChanged', pageIndex)
-      },
-      onViewerHideListener: () => {
-        console.log('image list viewer hide')
-      },
-      errorPlh,
-      defaultPageIndex: 1,
-      limit: 3
-    })
-    setTimeout(() => {
-      // go to the page
-      viewer.setCurrentPage(0)
-    }, 5000)
+  // constructor(props) {
+  //   super(props)
+  //   this.state = {
+  //     color: 'blue',
+  //   }
+  // }
+  state = {
+    color: 'blue',
+  }
+  handleTapCallback = (e) => {
+    const { color } = this.state || {};
+    const ele = document.getElementsByClassName('testtest')[0];
+    let styleArr = getComputedStyle(ele).cssText;
+    console.log(getComputedStyle(ele)['color'], '单击事件！', this.state);
+    if (color === 'blue') {
+      ele.style.color = 'red'
+      this.setState({
+        color: 'red',
+      })
+    } else {
+      ele.style.color = 'blue'
+      this.setState({
+        color: 'blue',
+      })
+    }
   }
 
-  onShowImgsClickWithDoms () {
+  onShowImgsClickWithDoms = () => {
+    let _this = this;
     const el = document.createElement('img')
     el.src = img_close
     el.alt = '地方'
     el.className = 'btnClose'
-    
+
     const indicator = document.createElement('div')
     indicator.className = 'indicator'
     const imgs = [img_cover, img_uof, img_timg]
@@ -49,81 +56,36 @@ export default class ExampleNode extends React.Component {
     el.addEventListener('click', e => {
       e.stopPropagation()
       e.preventDefault()
-      viewer.hideImgListViewer()
+      viewer.hideImgListViewer()  // 隐藏
     })
+
+    const Test = document.createElement('div');
+    Test.className = 'testtest'
+    Test.innerText = '789789 '
+
+    let dom = <div className="testtest">123213</div>
+
     viewer.showImgListViewer([{ src: img_cover }, { src: img_uof }, { src: img_timg }], {
       defaultPageIndex: 1,
       onPageChanged: pageIndex => {
-        dotDoms.forEach((dotDom, index) => {
-          if (pageIndex === index) {
-            dotDom.className = 'dot dotSel'
-          } else {
-            dotDom.className = 'dot'
-          }
-        })
+        console.log(pageIndex, 'pageIndex');
       },
-      restDoms: [el, indicator],
+      restDoms: [dom],
       viewerBg: '#333333',
-      clickClosable: false
+      clickClosable: false,
+      // handleTap: this.handleTapCallback()
+      handleTap: this.handleTapCallback,
     })
+    setTimeout(() => {
+      console.log('定时器')
+      viewer.setCurrentPage(2)
+    }, 2000)
   }
 
-  onShowImgsXXXXL () {
-    const imgs = []
-    for (let index = 0; index < 999; index++) {
-      imgs.push(index % 2 === 0 ? { src: img_cover } : { src: img_timg })
-    }
-    viewer.showImgListViewer(imgs, {
-      defaultPageIndex: 0,
-      limit: 3
-    })
-  }
-
-  onShowClick () {
-    viewer.showViewer(
-      {
-        src: img_cover,
-        alt: 'beauty door'
-      },
-      {
-        onViewerHideListener: () => {
-          console.log('image viewer hide')
-        },
-        errorPlh,
-        zIndex: 666,
-        viewerBg: '#000000'
-      }
-    )
-  }
-
-  onShowClickWithDoms () {
-    const el = document.createElement('img')
-    el.src = img_close
-    el.className = 'btnClose'
-    el.addEventListener('click', e => {
-      viewer.hideViewer()
-    })
-    viewer.showViewer(
-      {
-        src: img_uof
-      },
-      {
-        restDoms: [el],
-        clickClosable: false
-      }
-    )
-  }
-
-  render () {
+  render() {
     return (
       <div className='example'>
-        <button className='btnShow' data-testid='btnShowImage' onClick={this.onShowClick}>Show image</button>
-        <button className='btnShow2' data-testid='btnShowImageWithDoms' onClick={this.onShowClickWithDoms}>Show image with addition doms</button>
-        <button className='btnShow2' data-testid='btnShowImageList' onClick={this.onShowImgsClick}>Show images</button>
-        <button className='btnShow2' data-testid='btnShowImageListWithDoms' onClick={this.onShowImgsClickWithDoms}>Show images with addition doms</button>
-        <button className='btnShow2' data-testid='btnShowImageListWithBig' onClick={this.onShowImgsXXXXL}>Show images(a great number of images)</button>
-        <button style={{display: 'none'}} className='btnShow2' data-testid='btnHideImage' onClick={viewer.hideViewer}>Hide image viewer</button>
-        <button style={{display: 'none'}} data-testid='btnHideImageList' onClick={viewer.hideImgListViewer}>Hide image list viewer</button>
+        <button className='btnShow2' data-testid='btnShowImageListWithDoms' onClick={this.onShowImgsClickWithDoms}>111</button>
       </div>
     )
   }

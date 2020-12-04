@@ -12,7 +12,6 @@ import Transform from './utils/transform'
 
 const VIEWER_CONTAINER_ID = 'pobi_mobile_viewer_container_id'
 const VIEWER_SINGLE_IMAGE_ID = 'pobi_mobile_viewer_single_image_id'
-
 let containerDom = null
 let imgDom = null
 let loadingDom = null
@@ -21,7 +20,9 @@ let viewerData = null
 let alloyFinger = null
 let containerAlloyFinger = null
 
-function noop () {}
+let throttle = true;
+
+function noop() { }
 
 /**
  * Display image viewer
@@ -147,10 +148,21 @@ const appendSingleViewer = () => {
       imgDom.translateY += evt.deltaY * imgMoveFactor
     },
     singleTapListener: () => {
-      if(clickClosable) hideViewer()
+      if (clickClosable) hideViewer()
     },
     doubleTapListener: evt => {
-      triggerDoubleTab(imgDom, evt, imgMinScale, imgMaxScale)
+      let time = null;
+      if (throttle) {
+        throttle = false;
+        time = setTimeout(() => {
+          console.log(11);
+          throttle = true;
+          triggerDoubleTab(imgDom, evt, imgMinScale, imgMaxScale)
+        }, 200);
+      } else {
+        clearTimeout(time);
+        throttle = true;
+      }
     },
     multipointEndListener: () => {
       triggerPointEnd(imgDom, imgMinScale, imgMaxScale)
@@ -194,7 +206,7 @@ const imgClickListener = e => {
 
 const viewerContainerClickListener = e => {
   e.stopPropagation()
-  if(viewerData.options.clickClosable) hideViewer()
+  if (viewerData.options.clickClosable) hideViewer()
 }
 
 const removeViewerContainer = () => {

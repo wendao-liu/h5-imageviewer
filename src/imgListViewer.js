@@ -10,6 +10,8 @@ import imgAlloyFinger, {
 import orit from './utils/orientation'
 import scrollThrough from './utils/scrollThrough'
 import IMG_EMPTY from './utils/error_plh'
+import ReactDOM from 'react-dom'
+
 
 const VIEWER_CONTAINER_ID = 'pobi_mobile_viewer_container_id'
 const VIEWER_PANEL_ID = 'pobi_mobile_viewer_panel_id'
@@ -22,8 +24,12 @@ let currPage = 0
 let orientation = orit.PORTRAIT
 let viewerData = null
 let viewerAlloyFinger = null
+let time = null;
+let taplog = true;
+let taptime = null;
 
-function noop () {}
+
+function noop() { }
 
 /**
  * Display image list viewer
@@ -64,8 +70,8 @@ export const hideImgListViewer = (notifyUser = true) => {
  * @param {Number} pageIndex page index, start with 0
  */
 export const setCurrentPage = pageIndex => {
-  if (viewerData === null 
-    || pageIndex < 0 
+  if (viewerData === null
+    || pageIndex < 0
     || pageIndex > viewerData.imgList.length - 1) {
     return
   }
@@ -136,15 +142,17 @@ const initParams = (imgList, options, screenRotation, cachedCurrPage) => {
     pageDampingFactor = 0.9,
     imgMoveFactor = 1.5,
     imgMinScale = 1,
-    imgMaxScale = 2,
+    imgMaxScale = 4,
     limit = 5,
     zIndex = null,
     viewerBg = null,
-    clickClosable = true
+    clickClosable = true,
+    handleTap = () => { },
   } = wrapOptions
   if (!/^[0-9]+$/.test(limit) || limit < 3 || limit % 2 !== 1) {
     throw Error('limit must be odd number and greater than 3')
   }
+
   viewerData = {
     imgList: [...imgList],
     options: {
@@ -161,7 +169,8 @@ const initParams = (imgList, options, screenRotation, cachedCurrPage) => {
       imgMaxScale,
       zIndex,
       viewerBg,
-      clickClosable
+      clickClosable,
+      handleTap,
     }
   }
   if (viewerData.options.defaultPageIndex < 0 ||
@@ -177,8 +186,9 @@ const registerViewerAlloyFinger = () => {
     pageThreshold,
     imgMinScale,
     imgMaxScale,
-    clickClosable
-  } = viewerData.options
+    clickClosable,
+    handleTap,
+  } = viewerData.options;
   const pageCount = viewerData.imgList.length
   viewerAlloyFinger = imgAlloyFinger(containerDom, {
     swipeListener: evt => {
@@ -191,13 +201,16 @@ const registerViewerAlloyFinger = () => {
         currPage < pageCount - 1 &&
         (page >= currPage && factor >= pageThreshold)) {
         currPage += 1
+        console.log(getCurrImgDom(fixedCurrPage), currPage, fixedCurrPage, 'left')
         scrollToPage(getCurrImgDom(fixedCurrPage), currPage, fixedCurrPage)
       } else if (evt.direction === 'Right' &&
         currPage > 0 &&
         (page < currPage && factor <= (1 - pageThreshold))) {
         currPage -= 1
+        console.log(getCurrImgDom(fixedCurrPage), currPage, fixedCurrPage, 'right')
         scrollToPage(getCurrImgDom(fixedCurrPage), currPage, fixedCurrPage)
       } else {
+        console.log(getCurrImgDom(), currPage, fixedCurrPage, 'none')
         scrollToPage(getCurrImgDom(), currPage, fixedCurrPage)
       }
     },
@@ -270,10 +283,29 @@ const registerViewerAlloyFinger = () => {
       }
     },
     singleTapListener: () => {
-      if(clickClosable) hideImgListViewer()
+      if (clickClosable) hideImgListViewer()
     },
     doubleTapListener: evt => {
-      triggerDoubleTab(getCurrImgDom(), evt, imgMinScale, imgMaxScale)
+      clearTimeout(time);
+      time = setTimeout(() => {
+        triggerDoubleTab(getCurrImgDom(), evt, imgMinScale, imgMaxScale)
+      }, 200);
+    },
+    // 单击事件
+    tapListener: (evt) => {
+      if (taplog) {
+        taplog = false;
+        taptime = setTimeout(() => {
+          if (handleTap && typeof handleTap === 'function') {
+            handleTap(evt);
+          }
+        }, 200);
+      } else {
+        clearTimeout(taptime);
+        taptime = setTimeout(() => {
+          taplog = true;
+        }, 50);
+      }
     },
     multipointEndListener: () => {
       if (viewerData) {
@@ -288,7 +320,8 @@ const registerViewerAlloyFinger = () => {
     pinchListener: (evt, initScale) => {
       const dom = getCurrImgDom()
       if (!evt || !dom) return
-      dom.scaleX = dom.scaleY = initScale * evt.zoom 
+      dom.scaleX = dom.scaleY = initScale * evt.zoom
+      console.log(dom.scaleX, 'dom.scaleX', dom.scaleY, 'dom.scaleY')
     }
   })
   containerDom.style.transform = 'none'
@@ -357,7 +390,7 @@ const handleImgDoms = () => {
 }
 
 const replaceImgDom = (prevPage) => {
-  if (viewerData === null) return 
+  if (viewerData === null) return
   const { imgList, options: { limit } } = viewerData
   const lastIndex = imgList.length - 1
   if (currPage === 0 ||
@@ -410,14 +443,10 @@ const handleRestDoms = () => {
   const { restDoms } = viewerData.options
   if (restDoms.length > 0) {
     let docfrag = document.createDocumentFragment()
-    restDoms.forEach(additionDom => {
-      // element
-      if (additionDom.nodeType === 1) {
-        docfrag.appendChild(additionDom)
-      } else {
-        console.warn('Ignore invalid dom', additionDom)
-      }
-    })
+    ReactDOM.render(
+      restDoms,
+      docfrag,
+    )
     containerDom.appendChild(docfrag)
     docfrag = null
   }

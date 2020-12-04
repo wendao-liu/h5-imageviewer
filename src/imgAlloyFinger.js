@@ -3,7 +3,7 @@ import To from './utils/to'
 import Transform from './utils/transform'
 import ease from './utils/ease'
 
-function noop () {}
+function noop() { }
 
 const imgAlloyFinger = (el, options) => {
   const {
@@ -15,7 +15,8 @@ const imgAlloyFinger = (el, options) => {
     multipointEndListener = noop,
     multipointStartListener = noop,
     rotateListener = noop,
-    pinchListener = noop
+    pinchListener = noop,
+    tapListener = noop,
   } = options
   Transform(el)
   let initScale = 1
@@ -25,6 +26,12 @@ const imgAlloyFinger = (el, options) => {
     multipointStart: function () {
       To.stopAll()
       initScale = multipointStartListener()
+    },
+    tap: function (evt) {
+      disableSingleTab = true
+      tapListener(evt, initScale)
+      evt.preventDefault()
+      evt.stopPropagation()
     },
     rotate: function (evt) {
       disableSingleTab = true
@@ -75,7 +82,7 @@ const imgAlloyFinger = (el, options) => {
   return alloyFinger
 }
 
-export function triggerPointEnd (dom, imgMinScale, imgMaxScale) {
+export function triggerPointEnd(dom, imgMinScale, imgMaxScale) {
   if (!dom) return
   if (dom.scaleX < imgMinScale) {
     new To(dom, 'scaleX', imgMinScale, 500, ease)
@@ -91,7 +98,7 @@ export function triggerPointEnd (dom, imgMinScale, imgMaxScale) {
   }
 }
 
-export function triggerRotateEnd (dom) {
+export function triggerRotateEnd(dom) {
   if (!dom) return
   let rotation = dom.rotateZ % 360
   if (rotation < 0) rotation = 360 + rotation
@@ -109,13 +116,15 @@ export function triggerRotateEnd (dom) {
   }
 }
 
-export function triggerDoubleTab (dom, evt, imgMinScale, imgMaxScale) {
+export function triggerDoubleTab(dom, evt, imgMinScale, imgMaxScale) {
   if (!dom) return
+  console.log(evt.changedTouches, 6666); // 双击
   if (dom.scaleX >= imgMaxScale) {
-    new To(dom, 'scaleX', imgMinScale, 500, ease)
-    new To(dom, 'scaleY', imgMinScale, 500, ease)
-    new To(dom, 'translateX', 0, 500, ease)
-    new To(dom, 'translateY', 0, 500, ease)
+    // 是否缩回
+    // new To(dom, 'scaleX', imgMinScale, 500, ease)
+    // new To(dom, 'scaleY', imgMinScale, 500, ease)
+    // new To(dom, 'translateX', 0, 500, ease)
+    // new To(dom, 'translateY', 0, 500, ease)
   } else {
     const { pageX, pageY } = evt.changedTouches[0]
     const box = dom.getBoundingClientRect()
@@ -125,12 +134,14 @@ export function triggerDoubleTab (dom, evt, imgMinScale, imgMaxScale) {
     const x = box.width - (pageX - leftX) * 2 - (box.width / 2 - (pageX - leftX))
     new To(dom, 'scaleX', imgMaxScale, 500, ease)
     new To(dom, 'scaleY', imgMaxScale, 500, ease)
-    new To(dom, 'translateX', x, 500, ease)
-    new To(dom, 'translateY', y, 500, ease)
+    // new To(dom, 'translateX', x, 500, ease)
+    // new To(dom, 'translateY', y, 500, ease)
+    new To(dom, 'translateX', 0, 500, ease)
+    new To(dom, 'translateY', 0, 500, ease)
   }
 }
 
-function getImgDomTopY (dom) {
+function getImgDomTopY(dom) {
   if (!dom) return 0
   const { translateY } = dom
   const box = dom.getBoundingClientRect()
@@ -148,7 +159,7 @@ function getImgDomTopY (dom) {
   }
 }
 
-function getImgDomLeftX (dom) {
+function getImgDomLeftX(dom) {
   if (!dom) return 0
   const { translateX } = dom
   const box = dom.getBoundingClientRect()

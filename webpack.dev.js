@@ -75,7 +75,7 @@ module.exports = {
     }),
     new OpenBrowserPlugin(
       {
-        url: 'http://localhost:8080/example.html'
+        url: 'http://localhost:8090/example.html'
       }
     ),
     new CopyPlugin([
@@ -86,7 +86,7 @@ module.exports = {
     ])
   ],
   devServer: {
-    port: 8080,
+    port: 8090,
     contentBase: './dist',
     hot: true
   }
