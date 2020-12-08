@@ -89,5 +89,11 @@ module.exports = {
     port: 8090,
     contentBase: './dist',
     hot: true
+  },
+  resolve: {
+    // 设置别名
+    alias: {
+      '@': path.resolve('src')// 这样配置后 @ 可以指向 src 目录
+    }
   }
 }

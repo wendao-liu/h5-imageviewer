@@ -11,6 +11,7 @@ import orit from './utils/orientation'
 import scrollThrough from './utils/scrollThrough'
 import IMG_EMPTY from './utils/error_plh'
 import ReactDOM from 'react-dom'
+import close from '@/assets/close.png'
 
 
 const VIEWER_CONTAINER_ID = 'pobi_mobile_viewer_container_id'
@@ -47,7 +48,8 @@ export const showImgListViewer = (imgList = [], options, screenRotated = false) 
   appendViewerPanel()
   scrollToFixedPage(viewerData.options.defaultPageIndex)
   handleImgDoms()
-  handleRestDoms()
+  const { restDoms } = viewerData.options
+  handleRestDoms(restDoms)
   handleOrientationChange()
 }
 
@@ -192,20 +194,34 @@ const registerViewerAlloyFinger = () => {
   const pageCount = viewerData.imgList.length
   viewerAlloyFinger = imgAlloyFinger(containerDom, {
     swipeListener: evt => {
+      const dom = getCurrImgDom()
+      const { scaleX } = dom || {};
       const { translateX } = panelDom
       const scrollFactor = Math.abs(translateX) / window.innerWidth
       const page = Math.floor(scrollFactor)
       const factor = scrollFactor - page
       const fixedCurrPage = currPage
+      console.log(evt, '---', dom.scaleX, 'swipeListener')
+
       if (evt.direction === 'Left' &&
         currPage < pageCount - 1 &&
         (page >= currPage && factor >= pageThreshold)) {
+        if (scaleX !== 1) {
+          // 放大时回到当前页
+          setCurrentPage(currPage)
+          return null;
+        }
         currPage += 1
         console.log(getCurrImgDom(fixedCurrPage), currPage, fixedCurrPage, 'left')
         scrollToPage(getCurrImgDom(fixedCurrPage), currPage, fixedCurrPage)
       } else if (evt.direction === 'Right' &&
         currPage > 0 &&
         (page < currPage && factor <= (1 - pageThreshold))) {
+        if (scaleX !== 1) {
+          // 放大时回到当前页
+          setCurrentPage(currPage)
+          return null;
+        }
         currPage -= 1
         console.log(getCurrImgDom(fixedCurrPage), currPage, fixedCurrPage, 'right')
         scrollToPage(getCurrImgDom(fixedCurrPage), currPage, fixedCurrPage)
@@ -285,6 +301,7 @@ const registerViewerAlloyFinger = () => {
     singleTapListener: () => {
       if (clickClosable) hideImgListViewer()
     },
+    // 双击事件
     doubleTapListener: evt => {
       clearTimeout(time);
       time = setTimeout(() => {
@@ -296,15 +313,14 @@ const registerViewerAlloyFinger = () => {
       if (taplog) {
         taplog = false;
         taptime = setTimeout(() => {
+          taplog = true;
           if (handleTap && typeof handleTap === 'function') {
             handleTap(evt);
           }
-        }, 200);
+        }, 300);
       } else {
+        taplog = true;
         clearTimeout(taptime);
-        taptime = setTimeout(() => {
-          taplog = true;
-        }, 50);
       }
     },
     multipointEndListener: () => {
@@ -439,14 +455,19 @@ const createImgPl = () => {
   return pl
 }
 
-const handleRestDoms = () => {
-  const { restDoms } = viewerData.options
+export const handleRestDoms = (restDoms) => {
+  // const { restDoms } = viewerData.options
   if (restDoms.length > 0) {
-    let docfrag = document.createDocumentFragment()
+    let docfrag = document.createDocumentFragment();
+    console.log(restDoms, 'restDoms', docfrag);
+
     ReactDOM.render(
       restDoms,
       docfrag,
     )
+
+    console.log(docfrag, 'docfrag', containerDom, 'containerDom');
+
     containerDom.appendChild(docfrag)
     docfrag = null
   }
@@ -523,7 +544,8 @@ const appendSingleViewer = (imgObj, index) => {
 
   const imgDom = document.createElement('img')
   imgDom.setAttribute('id', genImgId(index))
-  imgDom.setAttribute('src', IMG_EMPTY)
+  // imgDom.setAttribute('src', IMG_EMPTY)
+  imgDom.setAttribute('src', close)
   imgDom.setAttribute('alt', imgObj.alt || '')
   imgDom.style.width = window.innerWidth + 'px'
   imgDom.style.height = window.innerWidth + 'px'

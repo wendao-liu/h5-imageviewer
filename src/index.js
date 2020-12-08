@@ -12,3 +12,5 @@ export const hideViewer = imgViewer.hideViewer
 export const showImgListViewer = imgListViewer.showImgListViewer
 export const hideImgListViewer = imgListViewer.hideImgListViewer
 export const setCurrentPage = imgListViewer.setCurrentPage
+export const handleRestDoms = imgListViewer.handleRestDoms
+

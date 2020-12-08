@@ -118,7 +118,7 @@ export function triggerRotateEnd(dom) {
 
 export function triggerDoubleTab(dom, evt, imgMinScale, imgMaxScale) {
   if (!dom) return
-  console.log(evt.changedTouches, 6666); // 双击
+  console.log(evt.changedTouches, '双击'); // 双击
   if (dom.scaleX >= imgMaxScale) {
     // 是否缩回
     // new To(dom, 'scaleX', imgMinScale, 500, ease)
@@ -127,6 +127,7 @@ export function triggerDoubleTab(dom, evt, imgMinScale, imgMaxScale) {
     // new To(dom, 'translateY', 0, 500, ease)
   } else {
     const { pageX, pageY } = evt.changedTouches[0]
+    console.log(pageX, pageY, 'pageX, pageY')
     const box = dom.getBoundingClientRect()
     const topY = getImgDomTopY(dom)
     const leftX = getImgDomLeftX(dom)
@@ -134,10 +135,10 @@ export function triggerDoubleTab(dom, evt, imgMinScale, imgMaxScale) {
     const x = box.width - (pageX - leftX) * 2 - (box.width / 2 - (pageX - leftX))
     new To(dom, 'scaleX', imgMaxScale, 500, ease)
     new To(dom, 'scaleY', imgMaxScale, 500, ease)
-    // new To(dom, 'translateX', x, 500, ease)
-    // new To(dom, 'translateY', y, 500, ease)
-    new To(dom, 'translateX', 0, 500, ease)
-    new To(dom, 'translateY', 0, 500, ease)
+    new To(dom, 'translateX', x, 500, ease)
+    new To(dom, 'translateY', y, 500, ease)
+    // new To(dom, 'translateX', 0, 500, ease)
+    // new To(dom, 'translateY', 0, 500, ease)
   }
 }
 

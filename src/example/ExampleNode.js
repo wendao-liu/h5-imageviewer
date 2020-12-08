@@ -7,7 +7,7 @@ import img_close from '../assets/close.png'
 import img_timg from '../assets/timg.jpg'
 import img_uof from '../assets/uof.jpg'
 import errorPlh from '../assets/img_loading_error.png'
-
+import error_plh from '@/utils/error_plh';
 export default class ExampleNode extends React.Component {
   // constructor(props) {
   //   super(props)
@@ -17,6 +17,7 @@ export default class ExampleNode extends React.Component {
   // }
   state = {
     color: 'blue',
+    data: [{ src: img_cover }, { src: img_uof }, { src: img_timg }]
   }
   handleTapCallback = (e) => {
     const { color } = this.state || {};
@@ -37,12 +38,8 @@ export default class ExampleNode extends React.Component {
   }
 
   onShowImgsClickWithDoms = () => {
-    let _this = this;
-    const el = document.createElement('img')
-    el.src = img_close
-    el.alt = '地方'
-    el.className = 'btnClose'
-
+    const { data } = this.state;
+    console.log(data, '轮播图片')
     const indicator = document.createElement('div')
     indicator.className = 'indicator'
     const imgs = [img_cover, img_uof, img_timg]
@@ -53,27 +50,31 @@ export default class ExampleNode extends React.Component {
       indicator.appendChild(dot)
       dotDoms.push(dot)
     })
-    el.addEventListener('click', e => {
-      e.stopPropagation()
-      e.preventDefault()
-      viewer.hideImgListViewer()  // 隐藏
-    })
 
-    const Test = document.createElement('div');
-    Test.className = 'testtest'
-    Test.innerText = '789789 '
-
-    let dom = <div className="testtest">123213</div>
-
-    viewer.showImgListViewer([{ src: img_cover }, { src: img_uof }, { src: img_timg }], {
+    // 关闭按钮
+    const closeDom = <img src={img_close} className="btnClose" onClick={
+      e => {
+        e.stopPropagation()
+        e.preventDefault()
+        viewer.hideImgListViewer()  // 隐藏
+      }
+    } />
+    let dom = <div className="testtest" onClick={() => {
+      // this.setState({
+      //   data: [...data, data[0]]
+      // })
+      // this.onShowImgsClickWithDoms();  // 触发事件
+      viewer.handleRestDoms([<div>999999</div>]) // 添加节点方法
+    }}>123213</div>
+    console.log(dom, closeDom, 'dom, closeDom');
+    viewer.showImgListViewer(data, {
       defaultPageIndex: 1,
       onPageChanged: pageIndex => {
         console.log(pageIndex, 'pageIndex');
       },
-      restDoms: [dom],
+      restDoms: [dom, closeDom],
       viewerBg: '#333333',
       clickClosable: false,
-      // handleTap: this.handleTapCallback()
       handleTap: this.handleTapCallback,
     })
     setTimeout(() => {
@@ -82,10 +83,18 @@ export default class ExampleNode extends React.Component {
     }, 2000)
   }
 
+
+  componentDidMount() {
+    setTimeout(() => {
+      this.onShowImgsClickWithDoms();
+    })
+  }
+
   render() {
     return (
       <div className='example'>
-        <button className='btnShow2' data-testid='btnShowImageListWithDoms' onClick={this.onShowImgsClickWithDoms}>111</button>
+        <button className='btnShow2' onClick={this.onShowImgsClickWithDoms}>111</button>
+        <div className="pobi_mobile_viewer_loading"></div>
       </div>
     )
   }
